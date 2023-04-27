@@ -3,6 +3,7 @@ package com.sparta.assignment.service;
 import com.sparta.assignment.dto.SigninRequestDto;
 import com.sparta.assignment.dto.SignupRequestDto;
 import com.sparta.assignment.entity.User;
+import com.sparta.assignment.entity.UserRoleEnum;
 import com.sparta.assignment.jwt.JwtUtil;
 import com.sparta.assignment.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,6 +19,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+    private static final String ADMIN_TOKEN = "AAABnvxRVklrnYxKZ0aHgTBcXukeZygoC";
 
     @Transactional
     public void signup(SignupRequestDto signupRequestDto){
@@ -28,7 +30,14 @@ public class UserService {
         if (found.isPresent()){
             throw new IllegalArgumentException("중복 된 아이디입니다"); //그런데 왜 굳이 IllegalArgumentException 써야 할까? 어차피 조건에서 중복 아이디 처리됐는데..
             }
-        User user = new User(username, password); // 생성자 주입하면 혹시 생략 가능한가?
+        UserRoleEnum userRoleEnum = UserRoleEnum.USER;
+        if (signupRequestDto.getAdminToken().equals(ADMIN_TOKEN)){
+            userRoleEnum = UserRoleEnum.ADMIN;
+        } else {
+            new IllegalArgumentException("관리자 암호가 틀려 관리자 등록이 불가합니다");
+        }
+
+        User user = new User(username, password, userRoleEnum);
         userRepository.save(user);
     }
 
@@ -45,7 +54,7 @@ public class UserService {
         if(!user.getPassword().equals(password)){
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
-        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createToken(user.getUsername()));
+        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createToken(user.getUsername(), user.getUserRoleEnum()));
     }
 
 
