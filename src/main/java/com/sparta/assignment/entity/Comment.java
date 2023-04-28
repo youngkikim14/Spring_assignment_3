@@ -23,13 +23,13 @@ public class Comment extends Timestamped{
     @Column (nullable = false)
     private String username;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "memo_id")
+    @ManyToOne
     private Memo memo;
 
-    public Comment(CommentRequestDto commentRequestDto, User username) {
+    public Comment(CommentRequestDto commentRequestDto, Memo memo, User username) {
         this.contents = commentRequestDto.getContents();
         this.username = username.getUsername();
+        this.memo = memo;
     }
 
     public void updateComment (CommentRequestDto commentRequestDto, User username){

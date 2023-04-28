@@ -14,17 +14,17 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("/comments")
-    public String createComment(@RequestBody CommentRequestDto commentRequestDto, HttpServletRequest request) {
-        return commentService.createComment(commentRequestDto, request);
+    public String createComment(@RequestBody CommentRequestDto commentRequestDto, Long memoid, HttpServletRequest request) {
+        return commentService.createComment(commentRequestDto, memoid, request);
     }
 
     @PutMapping("/comments/{id}")
-    public String updateComment(@PathVariable Long id, @RequestBody CommentRequestDto commentRequestDto, HttpServletRequest request){
-        return commentService.updateComment(id, commentRequestDto, request);
+    public String updateComment(@PathVariable Long id, @RequestBody CommentRequestDto commentRequestDto, Long memoid, HttpServletRequest request){
+        return commentService.updateComment(id, commentRequestDto, memoid, request);
     }
 
     @DeleteMapping("/comments/{id}")
-    public String deleteComment(@PathVariable Long id, HttpServletRequest request){
-        return commentService.deleteComment(id, request);
+    public String deleteComment(@PathVariable Long id, Long memoid, HttpServletRequest request){
+        return commentService.deleteComment(id, memoid, request);
     }
 }

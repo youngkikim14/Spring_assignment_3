@@ -2,10 +2,12 @@ package com.sparta.assignment.service;
 
 import com.sparta.assignment.dto.CommentRequestDto;
 import com.sparta.assignment.entity.Comment;
+import com.sparta.assignment.entity.Memo;
 import com.sparta.assignment.entity.User;
 import com.sparta.assignment.entity.UserRoleEnum;
 import com.sparta.assignment.jwt.JwtUtil;
 import com.sparta.assignment.repository.CommentRepository;
+import com.sparta.assignment.repository.MemoRepository;
 import com.sparta.assignment.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,11 +20,12 @@ import org.springframework.stereotype.Service;
 public class CommentService {
 
     private final CommentRepository commentRepository;
+    private final MemoRepository memoRepository;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
     @Transactional
-    public String createComment(CommentRequestDto commentRequestDto, HttpServletRequest request) {
+    public String createComment(CommentRequestDto commentRequestDto, Long memoid, HttpServletRequest request) {
         String token = jwtUtil.resolveToken(request); //토큰값
         Claims claims;
 
@@ -32,10 +35,13 @@ public class CommentService {
             } else {
                 throw new IllegalArgumentException("Token Erro"); // 에러표시
             }
+            Memo memo = memoRepository.findById(memoid).orElseThrow(
+                    () -> new IllegalArgumentException("존재하지 않는 게시글입니다")
+            );
             User user = userRepository.findByUsername(claims.getSubject()).orElseThrow( //토큰이 맞으면 토큰으로 db에서 사용자 정보 조회
                     () -> new IllegalArgumentException("없는 유저입니다")
             );
-            Comment comment = commentRepository.saveAndFlush(new Comment(commentRequestDto, user));
+            commentRepository.saveAndFlush(new Comment(commentRequestDto, memo, user));
 
             return "댓글 저장 완료";
         } else {
@@ -44,7 +50,7 @@ public class CommentService {
     }
 
     @Transactional
-    public String updateComment(Long id, CommentRequestDto commentRequestDto, HttpServletRequest request) {
+    public String updateComment(Long id, CommentRequestDto commentRequestDto, Long memoid,HttpServletRequest request) {
         String token = jwtUtil.resolveToken(request); //토큰값
         Claims claims;
 
@@ -54,11 +60,14 @@ public class CommentService {
             } else {
                 throw new IllegalArgumentException("Token Erro"); // 에러표시
             }
+            memoRepository.findById(memoid).orElseThrow(
+                    () -> new IllegalArgumentException("존재하지 않는 게시글입니다")
+            );
             User user = userRepository.findByUsername(claims.getSubject()).orElseThrow( //토큰이 맞으면 토큰으로 db에서 사용자 정보 조회
                     () -> new IllegalArgumentException("없는 유저입니다")
             );
             Comment comment = commentRepository.findByIdAndUsername(id, user.getUsername()).orElseThrow( // 없는 글 null 처리
-                    () -> new NullPointerException("존재하지 않은 게시글입니다.")
+                    () -> new NullPointerException("존재하지 않은 댓글입니다.")
             );
             UserRoleEnum userRoleEnum = user.getUserRoleEnum();
             if (userRoleEnum == UserRoleEnum.USER || userRoleEnum == UserRoleEnum.ADMIN) {
@@ -73,7 +82,7 @@ public class CommentService {
     }
 
     @Transactional
-    public String deleteComment(Long id, HttpServletRequest request) {
+    public String deleteComment(Long id, Long memoid, HttpServletRequest request) {
         String token = jwtUtil.resolveToken(request); //토큰값
         Claims claims;
 
@@ -83,6 +92,9 @@ public class CommentService {
             } else {
                 throw new IllegalArgumentException("Token Erro"); // 에러표시
             }
+            memoRepository.findById(memoid).orElseThrow(
+                    () -> new IllegalArgumentException("존재하지 않는 게시글입니다")
+            );
             User user = userRepository.findByUsername(claims.getSubject()).orElseThrow( //토큰이 맞으면 토큰으로 db에서 사용자 정보 조회
                     () -> new IllegalArgumentException("없는 유저입니다")
             );

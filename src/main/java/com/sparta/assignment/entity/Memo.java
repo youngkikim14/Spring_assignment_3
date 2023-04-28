@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Entity
 @Setter
@@ -25,7 +28,9 @@ public class Memo extends Timestamped {
     @Column(nullable = false)
     private String contents;
 
-
+    @OneToMany (fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "memo_id")
+    List<Comment> comments = new ArrayList<>();
 
 
     public Memo(MemoRequestDto requestDto, String username) {

@@ -25,7 +25,6 @@ public class MemoController {
 
     @PostMapping("/api/memos")// 쿠키값 헤더 부분에 담긴 토큰과 작성내용 가져오기
     public String createMemo(@RequestBody MemoRequestDto requestDto, HttpServletRequest request){
-
         return memoService.createMemo(requestDto, request);
     }
 

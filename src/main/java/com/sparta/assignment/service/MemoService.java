@@ -39,7 +39,7 @@ public class MemoService {
             User user = userRepository.findByUsername(claims.getSubject()).orElseThrow( //토큰이 맞으면 토큰으로 db에서 사용자 정보 조회
                     () -> new IllegalArgumentException("없는 유저입니다")
             );
-            Memo memo = memoRepository.saveAndFlush(new Memo(requestDto, user.getUsername()));
+            memoRepository.saveAndFlush(new Memo(requestDto, user.getUsername()));
 
             return "게시물 저장 성공";
         } else {
