@@ -30,6 +30,7 @@ public class Memo extends Timestamped {
 
     @OneToMany (fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "memo_id")
+    @OrderBy("modifiedAt DESC")
     List<Comment> comments = new ArrayList<>();
 
 

@@ -34,7 +34,7 @@ public class MemoController {
     }
 
     @GetMapping("/api/memos/{id}")//특정 게시물 조회
-    public MemoResponseDto getMemo(@PathVariable Long id) {
+    public Memo getMemo(@PathVariable Long id) {
         return memoService.getMemo(id);
     }
 

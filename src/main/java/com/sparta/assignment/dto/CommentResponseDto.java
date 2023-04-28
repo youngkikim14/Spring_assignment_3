@@ -3,8 +3,10 @@ package com.sparta.assignment.dto;
 import com.sparta.assignment.entity.Comment;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 public class CommentResponseDto {
 
