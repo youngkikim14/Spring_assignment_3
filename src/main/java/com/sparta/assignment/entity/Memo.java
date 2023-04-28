@@ -5,13 +5,15 @@ import com.sparta.assignment.dto.MemoRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Entity
+@Setter
 @NoArgsConstructor
 public class Memo extends Timestamped {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)//숫자를 자동으로 더해줌
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
@@ -33,8 +35,9 @@ public class Memo extends Timestamped {
         this.username = username;
     }
 
-    public void update(MemoRequestDto requestDto) {
+    public void update(MemoRequestDto requestDto, String username) {
         this.title = requestDto.getTitle();
         this.contents = requestDto.getContents();
+        this.username = username;
     }
 }
