@@ -25,7 +25,7 @@ public class CommentService {
     private final JwtUtil jwtUtil;
 
     @Transactional
-    public String createComment(CommentRequestDto commentRequestDto, Long memoid, HttpServletRequest request) {
+    public Comment createComment(Long memoid, CommentRequestDto commentRequestDto, HttpServletRequest request) {
         String token = jwtUtil.resolveToken(request); //토큰값
         Claims claims;
 
@@ -41,16 +41,17 @@ public class CommentService {
             User user = userRepository.findByUsername(claims.getSubject()).orElseThrow( //토큰이 맞으면 토큰으로 db에서 사용자 정보 조회
                     () -> new IllegalArgumentException("없는 유저입니다")
             );
-            commentRepository.saveAndFlush(new Comment(commentRequestDto, memo, user));
+            Comment comment = new Comment(commentRequestDto, memo, user);
+            commentRepository.saveAndFlush(comment);
 
-            return "댓글 저장 완료";
+            return comment;
         } else {
             return null;
         }
     }
 
     @Transactional
-    public String updateComment(Long id, CommentRequestDto commentRequestDto, Long memoid,HttpServletRequest request) {
+    public Comment updateComment(Long id, CommentRequestDto commentRequestDto, Long memoid,HttpServletRequest request) {
         String token = jwtUtil.resolveToken(request); //토큰값
         Claims claims;
 
@@ -66,13 +67,13 @@ public class CommentService {
             User user = userRepository.findByUsername(claims.getSubject()).orElseThrow( //토큰이 맞으면 토큰으로 db에서 사용자 정보 조회
                     () -> new IllegalArgumentException("없는 유저입니다")
             );
-            Comment comment = commentRepository.findByIdAndUsername(id, user.getUsername()).orElseThrow( // 없는 글 null 처리
+            Comment comment = commentRepository.findById(id).orElseThrow( // 없는 글 null 처리
                     () -> new NullPointerException("존재하지 않은 댓글입니다.")
             );
             UserRoleEnum userRoleEnum = user.getUserRoleEnum();
-            if (userRoleEnum == UserRoleEnum.USER || userRoleEnum == UserRoleEnum.ADMIN) {
+            if (comment.getUsername().equals(user.getUsername()) || userRoleEnum == UserRoleEnum.ADMIN) {
                 comment.updateComment(commentRequestDto, user);
-                return "업데이트 완료";
+                return comment;
             } else {
                 throw new IllegalArgumentException("권한이 없습니다");
             }
@@ -98,11 +99,11 @@ public class CommentService {
             User user = userRepository.findByUsername(claims.getSubject()).orElseThrow( //토큰이 맞으면 토큰으로 db에서 사용자 정보 조회
                     () -> new IllegalArgumentException("없는 유저입니다")
             );
-            Comment comment = commentRepository.findByIdAndUsername(id, user.getUsername()).orElseThrow( // 없는 글 null 처리
+            Comment comment = commentRepository.findById(id).orElseThrow( // 없는 글 null 처리
                     () -> new NullPointerException("존재하지 않은 게시글입니다.")
             );
             UserRoleEnum userRoleEnum = user.getUserRoleEnum();
-            if (userRoleEnum == UserRoleEnum.USER || userRoleEnum == UserRoleEnum.ADMIN) {
+            if (comment.getUsername().equals(user.getUsername()) || userRoleEnum == UserRoleEnum.ADMIN) {
                 commentRepository.deleteById(id);
                 return "댓글이 삭제 되었습니다";
             }

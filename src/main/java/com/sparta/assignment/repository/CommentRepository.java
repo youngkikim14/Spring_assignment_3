@@ -9,6 +9,6 @@ import java.util.Optional;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    Optional<Comment> findByIdAndUsername(Long id, String username);
+//    Optional<Comment> findByIdAndUsername(Long id, String username); 필요 없을듯
 
 }

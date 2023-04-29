@@ -1,14 +1,11 @@
 package com.sparta.assignment.service;
 
-import com.sparta.assignment.dto.CommentResponseDto;
 import com.sparta.assignment.dto.MemoRequestDto;
-import com.sparta.assignment.dto.MemoResponseDto;
 import com.sparta.assignment.entity.Comment;
 import com.sparta.assignment.entity.Memo;
 import com.sparta.assignment.entity.User;
 import com.sparta.assignment.entity.UserRoleEnum;
 import com.sparta.assignment.jwt.JwtUtil;
-import com.sparta.assignment.repository.CommentRepository;
 import com.sparta.assignment.repository.MemoRepository;
 import com.sparta.assignment.repository.UserRepository;
 import io.jsonwebtoken.Claims;
@@ -25,12 +22,11 @@ import java.util.List;
 public class MemoService {
 
     private final MemoRepository memoRepository;
-    private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
     @Transactional
-    public String createMemo(MemoRequestDto requestDto, HttpServletRequest request) { //토큰값 가져와서 검증
+    public Memo createMemo(MemoRequestDto requestDto, HttpServletRequest request) { //토큰값 가져와서 검증
         String token = jwtUtil.resolveToken(request); //토큰값
         Claims claims;
 
@@ -43,13 +39,13 @@ public class MemoService {
             User user = userRepository.findByUsername(claims.getSubject()).orElseThrow( //토큰이 맞으면 토큰으로 db에서 사용자 정보 조회
                     () -> new IllegalArgumentException("없는 유저입니다")
             );
-            memoRepository.saveAndFlush(new Memo(requestDto, user.getUsername()));
+            Memo memo = new Memo(requestDto, user.getUsername());
+            memoRepository.saveAndFlush(memo);
 
-            return "게시물 저장 성공";
+            return memo;
         } else {
             return null;
         }
-
     }
 
     @Transactional(readOnly = true) //전체 글 조회
@@ -78,7 +74,7 @@ public class MemoService {
 
 
     @Transactional
-    public String update(Long id, MemoRequestDto requestDto, HttpServletRequest request) {
+    public Memo update(Long id, MemoRequestDto requestDto, HttpServletRequest request) {
         String token = jwtUtil.resolveToken(request); //토큰값
         Claims claims;
 
@@ -91,13 +87,13 @@ public class MemoService {
             User user = userRepository.findByUsername(claims.getSubject()).orElseThrow( //토큰이 맞으면 토큰으로 db에서 사용자 정보 조회
                     () -> new IllegalArgumentException("없는 유저입니다")
             );
-            Memo memo = memoRepository.findByIdAndUsername(id, user.getUsername()).orElseThrow( // 없는 글 null 처리
+            Memo memo = memoRepository.findById(id).orElseThrow( // 없는 글 null 처리
                     () -> new NullPointerException("존재하지 않은 게시글입니다.")
             );
             UserRoleEnum userRoleEnum = user.getUserRoleEnum();
-            if (userRoleEnum == UserRoleEnum.USER || userRoleEnum == UserRoleEnum.ADMIN){
+            if (user.getUsername().equals(memo.getUsername()) || userRoleEnum == UserRoleEnum.ADMIN){
                 memo.update(requestDto, user.getUsername());
-                return "업데이트 완료";
+                return memo;
             } else {
                 throw new IllegalArgumentException("권한이 없습니다");
                     }
@@ -120,11 +116,11 @@ public class MemoService {
             User user = userRepository.findByUsername(claims.getSubject()).orElseThrow( //토큰이 맞으면 토큰으로 db에서 사용자 정보 조회
                     () -> new IllegalArgumentException("없는 유저입니다")
             );
-            Memo memo = memoRepository.findByIdAndUsername(id, user.getUsername()).orElseThrow( // 없는 글 null 처리
+            Memo memo = memoRepository.findById(id).orElseThrow( // 없는 글 null 처리
                     () -> new NullPointerException("존재하지 않은 게시글입니다.")
             );
             UserRoleEnum userRoleEnum = user.getUserRoleEnum();
-            if (userRoleEnum == UserRoleEnum.USER || userRoleEnum == UserRoleEnum.ADMIN) {
+            if (user.getUsername().equals(memo.getUsername()) || userRoleEnum == UserRoleEnum.ADMIN) {
                 memoRepository.deleteById(id);
                 return "삭제 완료";
             } else {
