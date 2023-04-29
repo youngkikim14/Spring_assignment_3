@@ -1,6 +1,7 @@
 package com.sparta.assignment.service;
 
 import com.sparta.assignment.dto.CommentRequestDto;
+import com.sparta.assignment.dto.CommentResponseDto;
 import com.sparta.assignment.entity.Comment;
 import com.sparta.assignment.entity.Memo;
 import com.sparta.assignment.entity.User;
@@ -25,7 +26,7 @@ public class CommentService {
     private final JwtUtil jwtUtil;
 
     @Transactional
-    public Comment createComment(Long memoid, CommentRequestDto commentRequestDto, HttpServletRequest request) {
+    public CommentResponseDto createComment(Long memoid, CommentRequestDto commentRequestDto, HttpServletRequest request) {
         String token = jwtUtil.resolveToken(request); //토큰값
         Claims claims;
 
@@ -35,23 +36,23 @@ public class CommentService {
             } else {
                 throw new IllegalArgumentException("Token Erro"); // 에러표시
             }
-            Memo memo = memoRepository.findById(memoid).orElseThrow(
-                    () -> new IllegalArgumentException("존재하지 않는 게시글입니다")
-            );
             User user = userRepository.findByUsername(claims.getSubject()).orElseThrow( //토큰이 맞으면 토큰으로 db에서 사용자 정보 조회
                     () -> new IllegalArgumentException("없는 유저입니다")
             );
-            Comment comment = new Comment(commentRequestDto, memo, user);
+            Memo memo = memoRepository.findById(memoid).orElseThrow(
+                    () -> new IllegalArgumentException("존재하지 않는 게시글입니다")
+            );
+            Comment comment = new Comment(commentRequestDto, memo,user);
             commentRepository.saveAndFlush(comment);
 
-            return comment;
+            return new CommentResponseDto(comment);
         } else {
             return null;
         }
     }
 
     @Transactional
-    public Comment updateComment(Long id, CommentRequestDto commentRequestDto, Long memoid,HttpServletRequest request) {
+    public CommentResponseDto updateComment(Long id, CommentRequestDto commentRequestDto, Long memoid,HttpServletRequest request) {
         String token = jwtUtil.resolveToken(request); //토큰값
         Claims claims;
 
@@ -73,7 +74,7 @@ public class CommentService {
             UserRoleEnum userRoleEnum = user.getUserRoleEnum();
             if (comment.getUsername().equals(user.getUsername()) || userRoleEnum == UserRoleEnum.ADMIN) {
                 comment.updateComment(commentRequestDto, user);
-                return comment;
+                return new CommentResponseDto(comment);
             } else {
                 throw new IllegalArgumentException("권한이 없습니다");
             }

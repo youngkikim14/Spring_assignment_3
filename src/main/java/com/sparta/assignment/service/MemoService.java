@@ -1,6 +1,8 @@
 package com.sparta.assignment.service;
 
+import com.sparta.assignment.dto.CommentResponseDto;
 import com.sparta.assignment.dto.MemoRequestDto;
+import com.sparta.assignment.dto.MemoResponseDto;
 import com.sparta.assignment.entity.Comment;
 import com.sparta.assignment.entity.Memo;
 import com.sparta.assignment.entity.User;
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -49,15 +52,16 @@ public class MemoService {
     }
 
     @Transactional(readOnly = true) //전체 글 조회
-    public List<Memo> getMemos() {
+    public List<MemoResponseDto> getMemos() {
         List<Memo> memos = memoRepository.findAllByOrderByModifiedAtDesc();
+        List<MemoResponseDto> memoResponseDtos = new ArrayList<>();
         for (Memo memo: memos) {
-            List<Comment> comments = memo.getComments();
-            for (Comment comment: comments) {
+            for (Comment comment: memo.getComments()) {
                 String commentcontent = comment.getContents();
             }
+            memoResponseDtos.add(new MemoResponseDto(memo));
         }
-        return memos;
+        return memoResponseDtos;
     }
 
 

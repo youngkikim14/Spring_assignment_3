@@ -1,5 +1,6 @@
 package com.sparta.assignment.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.sparta.assignment.dto.CommentRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -23,10 +24,12 @@ public class Comment extends Timestamped{
     @Column (nullable = false)
     private String username;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "memo_id")
+    @JsonBackReference
     private Memo memo;
 
-    public Comment(CommentRequestDto commentRequestDto, Memo memo, User username) {
+    public Comment(CommentRequestDto commentRequestDto, Memo memo,User username) {
         this.contents = commentRequestDto.getContents();
         this.username = username.getUsername();
         this.memo = memo;

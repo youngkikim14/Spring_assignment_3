@@ -29,7 +29,7 @@ public class MemoController {
     }
 
     @GetMapping("/api/memos")//전체 조회//주소가 똑같아도 방식(get,post)달라서 주소 같아도 됨(?)
-    public List<Memo> getMemos(){
+    public List<MemoResponseDto> getMemos(){
         return memoService.getMemos();
     }
 
